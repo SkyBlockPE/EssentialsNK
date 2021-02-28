@@ -5,8 +5,11 @@ import cn.nukkit.block.Block;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.event.EventHandler;
 import cn.nukkit.event.Listener;
+import cn.nukkit.event.entity.EntityPortalEnterEvent;
 import cn.nukkit.event.player.*;
 import cn.nukkit.level.Location;
+import cn.nukkit.utils.TextFormat;
+import cn.yescallop.essentialsnk.util.PortalRegion;
 
 import java.util.Iterator;
 
@@ -21,6 +24,19 @@ public class EventListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onPlayerTeleport(PlayerTeleportEvent event) {
         api.setLastLocation(event.getPlayer(), event.getFrom());
+    }
+
+    @EventHandler
+    public void onPlayerPortal(EntityPortalEnterEvent event) {
+        if (!(event.getEntity() instanceof Player)) {
+            return;
+        }
+        Player player = (Player) event.getEntity();
+        for (PortalRegion r : api.getPortalRegion()) {
+            if (!r.inRegion(player)) {
+                continue;
+            }
+        }
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -75,6 +91,20 @@ public class EventListener implements Listener {
         if (api.isMuted(player)) {
             event.setCancelled();
             player.sendMessage(Language.translate("commands.generic.muted", api.getUnmuteTimeMessage(player)));
+        }
+    }
+
+    @EventHandler
+    public void onInteract(PlayerInteractEvent event) {
+        if(event.getBlock().getId() == Block.ENCHANTING_TABLE) {
+            event.getPlayer().sendMessage(TextFormat.colorize('&', "&7[&aSkyBlock&ePE&7]&r &cEnchanting tables are disabled due to the large amount of bugs. Buy enchants from players instead!"));
+            event.setCancelled(true);
+            return;
+        }
+        if(event.getBlock().getId() == Block.ANVIL) {
+            event.getPlayer().sendMessage(TextFormat.colorize('&', "&7[&aSkyBlock&ePE&7]&r &cAnvils are disabled due to the large amount of bugs!"));
+            event.setCancelled(true);
+            return;
         }
     }
 }

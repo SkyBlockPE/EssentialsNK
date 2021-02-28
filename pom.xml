@@ -42,6 +42,13 @@
             <version>1.0-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
+		<dependency>
+			<groupId>com.boydti</groupId>
+			<artifactId>fawe</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+			<systemPath>${project.basedir}/src/main/libs/fawe.jar</systemPath>
+			<scope>system</scope>
+		</dependency>
     </dependencies>
 
     <build>

@@ -1,5 +1,29 @@
 package cn.yescallop.essentialsnk;
 
+import java.io.File;
+import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.OptionalInt;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.boydti.fawe.object.FawePlayer;
+import com.google.common.collect.ImmutableSet;
+import com.sk89q.worldedit.regions.Region;
+
 import cn.nukkit.AdventureSettings;
 import cn.nukkit.IPlayer;
 import cn.nukkit.Player;
@@ -24,17 +48,7 @@ import cn.nukkit.utils.Config;
 import cn.nukkit.utils.ConfigSection;
 import cn.yescallop.essentialsnk.util.ConfigType;
 import cn.yescallop.essentialsnk.util.Configs;
-import com.google.common.collect.ImmutableSet;
-
-import java.io.File;
-import java.sql.Timestamp;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import cn.yescallop.essentialsnk.util.PortalRegion;
 
 public class EssentialsAPI {
 
@@ -55,6 +69,7 @@ public class EssentialsAPI {
     private Map<Integer, TPRequest> tpRequests = new ConcurrentHashMap<>();
     private List<Player> vanishedPlayers = new ArrayList<>();
     private Map<String, String> lastMessagedPlayers = new HashMap<>();
+    private List<PortalRegion> portalRegion = new ArrayList<>();
 
     private final ConfigType homeConfig;
     private final ConfigType warpConfig;
@@ -588,26 +603,75 @@ public class EssentialsAPI {
     }
 
     private void checkAndUpdateLegacyMute(UUID uuid) {
-        IPlayer player = getServer().getOfflinePlayer(uuid);
-        if (player == null) {
-            return;
+        return;
+    }
+
+    public boolean addRegion(Player player, String name, String address) {
+        Region selection = FawePlayer.wrap(player).getSelection();
+        if (selection == null) {
+            return false;
         }
-        String uuidString = player.getUniqueId().toString();
-        String name = player.getName().toLowerCase();
-        if (this.configs.exists(this.muteConfig, name)) {
-            if (this.configs.exists(this.muteConfig, uuidString)) {
-                ConfigSection newSection = this.configs.get(this.muteConfig, uuidString, new ConfigSection());
-                ConfigSection oldSection = this.configs.get(this.muteConfig, name, new ConfigSection());
-                oldSection.forEach((s, o) -> {
-                    if (!newSection.containsKey(s)) {
-                        newSection.put(s, o);
-                    }
-                });
-                this.configs.remove(this.muteConfig, name);
-            } else {
-                this.configs.set(this.muteConfig, uuidString, this.configs.get(this.muteConfig, name, new ConfigSection()));
+        Iterator<PortalRegion> iterator = portalRegion.iterator();
+        while (iterator.hasNext()) {
+            PortalRegion region = iterator.next();
+            if (region.getName().equalsIgnoreCase(name)) {
+                return false;
             }
         }
+        PortalRegion region = new PortalRegion(selection.getMinimumPoint(), selection.getMaximumPoint(),
+                Server.getInstance().getLevelByName(selection.getWorld().getName()), name, address);
+        portalRegion.add(region);
+        return true;
+    }
+
+    public boolean removeRegion(String name) {
+        Iterator<PortalRegion> iterator = portalRegion.iterator();
+        while (iterator.hasNext()) {
+            PortalRegion region = iterator.next();
+            if (region.getName().equalsIgnoreCase(name)) {
+                iterator.remove();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public List<PortalRegion> getPortalRegion() {
+        return portalRegion;
+    }
+
+    public void savePortals(Config config) {
+        config.remove("portals");
+        Iterator<PortalRegion> iterator = portalRegion.iterator();
+        while (iterator.hasNext()) {
+            PortalRegion region = iterator.next();
+            config.set("portals." + region.getName() + ".min", positionToString(region.getMinimumPoint()));
+            config.set("portals." + region.getName() + ".max", positionToString(region.getMaximumPoint()));
+            config.set("portals." + region.getName() + ".address", region.getAddress());
+        }
+        config.save();
+    }
+
+    public void loadPortals(Config config) {
+        config.reload();
+        if (config.exists("portals")) {
+            for (String name : config.getSection("portals").getKeys(false)) {
+                PortalRegion portal = new PortalRegion(stringToPosition(config.getString("portals." + name + ".min")),
+                        stringToPosition(config.getString("portals." + name + ".max")), name,
+                        config.getString("portals." + name + ".address"));
+                portalRegion.add(portal);
+            }
+        }
+    }
+
+    private static String positionToString(Position pos) {
+        return (pos.getX() + "," + pos.getY() + "," + pos.getZ() + "," + pos.getLevel().getName()).replace(".", "@");
+    }
+
+    private Position stringToPosition(String pos) {
+        String[] splitter = pos.replace("@", ".").split(",");
+        return new Position(Double.parseDouble(splitter[0]), Double.parseDouble(splitter[1]),
+                Double.parseDouble(splitter[2]), Server.getInstance().getLevelByName(splitter[3]));
     }
 
     // Scallop: Thanks lmlstarqaq

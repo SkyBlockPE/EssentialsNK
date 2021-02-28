@@ -128,3 +128,7 @@ permissions:
     default: op
   essentialsnk.whois.other:
     default: op
+  essentialsnk.portal:
+    default: op
+  essentialsnk.vote:
+    default: true

@@ -3,6 +3,7 @@ package cn.yescallop.essentialsnk.command.defaults;
 import cn.nukkit.command.CommandSender;
 import cn.nukkit.command.data.CommandParamType;
 import cn.nukkit.command.data.CommandParameter;
+import cn.nukkit.utils.TextFormat;
 import cn.yescallop.essentialsnk.EssentialsAPI;
 import cn.yescallop.essentialsnk.command.CommandBase;
 
@@ -27,7 +28,7 @@ public class BroadcastCommand extends CommandBase {
             this.sendUsage(sender);
             return false;
         }
-        api.getServer().broadcastMessage(String.join(" ", args));
+        api.getServer().broadcastMessage(TextFormat.colorize(String.join(" ", args)));
         return true;
     }
 }
