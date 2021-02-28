@@ -11,11 +11,11 @@ import cn.yescallop.essentialsnk.command.CommandBase;
 
 public class RepairCommand extends CommandBase {
 	
-	private final Item item;
+	private final Item token;
     public RepairCommand(EssentialsAPI api) {
         super("repair", api);
-        item = new Item(Item.FIREWORKSCHARGE, 0, 1, TextFormat.GREEN + "Repair Token");
-        item.setLore("Do /repair with the tool in your hand to fix it.");
+        token = new Item(Item.FIREWORKSCHARGE, 0, 1, TextFormat.GREEN + "Repair Token");
+        token.setLore("Do /repair with the tool in your hand to fix it.");
         this.setAliases(new String[]{"fix"});
         // command parameters
         commandParameters.clear();
@@ -29,11 +29,11 @@ public class RepairCommand extends CommandBase {
             return false;
         }
         Player player = (Player) sender;
-        if(!player.getInventory().contains(item)) {
+        if(!player.getInventory().contains(token)) {
             player.sendMessage(Language.translate("commands.repair.length"));
         	return true;
         }
-        if (!api.isRepairable(item)) {
+        if (!api.isRepairable(token)) {
             player.sendMessage(Language.translate("commands.repair.unrepairable"));
         	return true;
         }
