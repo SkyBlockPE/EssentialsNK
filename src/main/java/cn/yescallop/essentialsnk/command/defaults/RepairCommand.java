@@ -33,11 +33,14 @@ public class RepairCommand extends CommandBase {
             player.sendMessage(Language.translate("commands.repair.length"));
         	return true;
         }
-        if (!api.isRepairable(token)) {
+        Item handItem = player.getInventory().getItemInHand();
+        if (!api.isRepairable(handItem)) {
             player.sendMessage(Language.translate("commands.repair.unrepairable"));
         	return true;
         }
-        player.getInventory().setItemInHand(player.getInventory().getItemInHand().setDamage(0));
+        player.getInventory().remove(token);
+        handItem.setDamage(0);
+        player.getInventory().setItemInHand(handItem);
         player.sendMessage(Language.translate("commands.repair.success"));
         return true;
     }
