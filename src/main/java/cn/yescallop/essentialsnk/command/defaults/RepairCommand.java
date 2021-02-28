@@ -37,7 +37,7 @@ public class RepairCommand extends CommandBase {
             player.sendMessage(Language.translate("commands.repair.unrepairable"));
         	return true;
         }
-        player.getInventory().getItemInHand().setDamage(0);
+        player.getInventory().setItemInHand(player.getInventory().getItemInHand().setDamage(0));
         player.sendMessage(Language.translate("commands.repair.success"));
         return true;
     }
