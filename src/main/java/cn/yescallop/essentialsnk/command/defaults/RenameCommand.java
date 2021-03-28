@@ -17,7 +17,7 @@ public class RenameCommand extends CommandBase {
 	public RenameCommand(EssentialsAPI api) {
 		super("rename", api);
 		this.setAliases(new String[] { "renameme" });
-		token = new Item(Item.FIREWORKSCHARGE, 0, 1, TextFormat.GREEN + "Rename Token");
+		token = new Item(Item.FIREWORKSCHARGE, 0, 1, TextFormat.GREEN + "Rename Token").setLore("Do /rename with the item in your hand");
 		token.setLore("Do /rename with the tool in your hand to fix it.");
 
 		// command parameters

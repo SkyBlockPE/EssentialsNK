@@ -14,7 +14,7 @@ public class RepairCommand extends CommandBase {
 
 	public RepairCommand(EssentialsAPI api) {
 		super("repair", api);
-		token = new Item(Item.FIREWORKSCHARGE, 0, 1, TextFormat.GREEN + "Repair Token");
+		token = new Item(Item.FIREWORKSCHARGE, 0, 1, TextFormat.GREEN + "Repair Token").setLore("Do /repair with the tool in your hand");
 		token.setLore("Do /repair with the tool in your hand to fix it.");
 		this.setAliases(new String[] { "fix" });
 		// command parameters
